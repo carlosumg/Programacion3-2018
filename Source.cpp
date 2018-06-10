@@ -4,6 +4,9 @@
 #include <Windows.h>
 #include <string>
 #include <cstdio>
+#include <math.h>
+#include <fstream>
+#include <fstream>
 using namespace std;
 
 struct nodo {
@@ -21,6 +24,18 @@ struct pila {
 	int numero;
 	struct pila *sig;
 }*ini = NULL, *fin = NULL;
+
+typedef struct no no_hash;
+struct no {
+	int data;
+	int state;/*0 para vacio, 1 para removido y 2 para ocupado*/
+};
+
+
+int matriz[100][100];
+int matriz2[100][100];
+int vect1[100];
+int vect2[100];
 
 void insertarCola();
 void extraerCola();
@@ -228,7 +243,7 @@ void MenuCola() {
 		case 3:
 			extraerCola();
 			break;
-		
+
 		}
 		_getch();
 	} while (opc != 4);
@@ -362,6 +377,332 @@ void MenuPila() {
 		_getch();
 	} while (opc != 4);
 }
+typedef struct nodo *ABB;
+
+ABB crearNodo(int x)
+{
+	ABB nuevoNodo = new(struct nodo);
+	nuevoNodo->n = x;
+	nuevoNodo->anterior = NULL;
+	nuevoNodo->siguiente = NULL;
+
+	return nuevoNodo;
+}
+void insertar(ABB &arbol, int x)
+{
+	if (arbol == NULL)
+	{
+		arbol = crearNodo(x);
+	}
+	else if (x < arbol->n)
+		insertar(arbol->anterior, x);
+	else if (x > arbol->n)
+		insertar(arbol->siguiente, x);
+}
+
+void preOrden(ABB arbol)
+{
+	if (arbol != NULL)
+	{
+		cout << arbol->n << " ";
+		preOrden(arbol->anterior);
+		preOrden(arbol->siguiente);
+	}
+}
+
+void inOrden(ABB arbol)
+{
+	if (arbol != NULL)
+	{
+		inOrden(arbol->anterior);
+		cout << arbol->n << " ";
+		inOrden(arbol->siguiente);
+	}
+}
+
+void postOrden(ABB arbol)
+{
+	if (arbol != NULL)
+	{
+		postOrden(arbol->anterior);
+		postOrden(arbol->siguiente);
+		cout << arbol->n << " ";
+	}
+}
+//busqueda
+bool busqueda(nodo *arbol, int n)
+{
+	if (arbol == NULL)
+	{
+		return false;
+	}
+	else if (arbol->n == n)
+	{
+		return true;
+	}
+	else if (n < arbol->n)
+	{
+		return busqueda(arbol->anterior, n);
+	}
+	else {
+		return busqueda(arbol->siguiente, n);
+	}
+}
+
+void Recorridos()
+{
+	ABB arbol = NULL;
+
+	int n;
+	int x;
+
+	cout << "\n\t\t  ARBOL BINARIO DE BUSQUEDA Y RECORRIDOS  \n\n";
+
+	cout << " Numero de nodos del arbol:  ";
+	cin >> n;
+	cout << endl;
+
+	for (int i = 0; i<n; i++)
+	{
+		cout << " Numero del nodo " << i + 1 << ": ";
+		cin >> x;
+		insertar(arbol, x);
+	}
+
+	cout << "\n Recorridos del ABB";
+
+	cout << "\n\n Pre Orden  :  ";   preOrden(arbol);
+	cout << "\n\n In orden   :  ";   inOrden(arbol);
+	cout << "\n\n Post Orden :  ";   postOrden(arbol);
+
+	cout << endl << endl;
+
+	system("pause");
+}
+void menu()
+{
+	//system("cls");
+	cout << "\n\t\t  ARBOL BINARIO \n\n";
+	cout << "\t 1.  INSERTAR NODO \n";
+	cout << "\t 3.  MOSTRAR RECORRIDOS \n";
+	cout << "\t 4.  BUSCAR NODO \n";
+	cout << "\t 6. SALIR                              \n";
+
+	cout << "\n\t Ingrese opcion : ";
+}
+
+void menu2()
+{
+	//system("cls");   // para limpiar pantalla
+	cout << endl;
+	cout << "\t 1. EN ORDEN \n";
+	cout << "\t 2. PREORDEN \n";
+	cout << "\t 3. POSTORDEN \n";
+	cout << "\n\t     Opcion :  ";
+}
+
+	int funcion(int k, int m, int i)
+	{
+		return((k + i) % m);
+	}
+	//crea la tabla hash
+	no_hash*Crea_Hash(int m) {
+		no_hash*temp;
+		int i;
+		if ((temp = (no_hash*)malloc(m * sizeof(no_hash))) != NULL)
+		{
+			for (i = 0; i < m; i++)
+				temp[i].state = 0;
+			return temp;
+		}
+		else exit(0);
+	}
+	//inserta un elemento k en la tabla de T tamaño m
+	void Inserta_Hash(no_hash*T, int m, int k)
+	{
+		int j, i = 0;
+		do {
+			j = funcion(k, m, i);
+			if (T[j].state == 0 || T[j].state == 1)
+			{
+				T[j].state = k;
+				T[j].state = 2;
+				cout << "Elemento insertado con exito";
+				return;
+			}
+			else
+				i++;
+		} while (i < m);
+		cout << "\nTabla llena";
+	}
+	int Busca_Hash(no_hash*T, int m, int k, int i)
+	{
+		int j;
+		if (i < m) {
+			j = funcion(k, m, i);
+			if (T[j].state == 0)
+				return -1;
+			else
+				if (T[j].state == 1)
+					return Busca_Hash(T, m, k, i + 1);
+				else
+					if (T[j].data == k)
+						return j;
+					else
+						return Busca_Hash(T, m, k, i + 1);
+		}
+		return -1;
+	}
+	int Remove_Hash(no_hash *T, int m, int k) {
+		int i;
+		i = Busca_Hash(T, m, k, 0);
+		if (i == -1) {
+			return -1;
+		}
+		else {
+			T[i].state = 1;
+			return 1;
+		}
+	}
+
+	void TablaHash() {
+		int m, i, k;
+		char resp;
+		no_hash *T;
+		cout << "\nEntre con el tamano de la tabla";
+		cin >> m;
+		T = Crea_Hash(m);
+		while (1) {
+			cout << "\nInsertar(i) Buscar (b) Remover (r) Salir (s)\n";
+			resp = _getche();
+			_getch();
+			switch (resp) {
+			case 1:
+				cout << "\nIngrese el numero a ser insertado en la tabla: ";
+				cin >> k;
+				Inserta_Hash(T, m, k);
+				break;
+			case 2:
+				cout << "\nIngrese el numero a ser buscado en la tabla: ";
+				cin >> k;
+				i = Busca_Hash(T, m, k, 0);
+				if (i == -1) {
+
+					cout << "\nNumero no encontrado!";
+				}
+				else {
+					cout << "\nNumero encontrado!";
+				}
+				break;
+			case 3:
+				cout << "\nIngrese el numero a ser eliminados de la tabla";
+				cin >> k;
+				i = Remove_Hash(T, m, k);
+				if (i == -1) {
+					cout << "\nNumero no encontrado";
+				}
+				else {
+					cout << "Numero encontrado";
+				}
+				break;
+			case 4:
+				exit(0);
+				break;
+			}
+		}
+	}
+	void llenarMatrizDistancias(int n) {
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < n; j++) {
+				if (i != j) {
+					cout << "Ingrese valor de la posicion: (" << i + 1 << "," << j + 1 << "): ";
+					cin >> matriz[i][j];
+				}
+				else {
+					matriz[i][j] = NULL;
+				}
+			}
+		}
+	}
+
+	void llenarMatrizAdyacencia(int n) {
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < n; j++) {
+				matriz2[i][j] = j + 1;
+			}
+		}
+	}
+
+	void mostrarMDistancias(int n) {
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < n; j++) {
+				cout << "Valor de la posicion: (" << i + 1 << "," << j + 1 << "): " << matriz[i][j] << endl;
+			}
+		}
+		_getch();
+	}
+
+	void mostrarMAdyacencia(int n) {
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < n; j++) {
+				cout << "Valor de la posicion: (" << i + 1 << "," << j + 1 << "): " << matriz2[i][j] << endl;
+			}
+		}
+		_getch();
+	}
+	void realizarCalculos(int n) {
+
+		int i, j, suma;
+		int bucle;
+		for (i = 1; i <= n; i++) {
+			for (j = 1; j <= n; j++) {
+				vect1[i] = matriz[i][j];
+				vect2[i] = matriz[j][i];
+			}
+
+			for (int t = 1; t <= n; t++)
+				for (j = 1; j <= n; j++) {
+					if (vect2[t] == 999 || vect1[j] == 999) suma = 999;
+					else suma = vect2[t] + vect1[j];
+					if (suma < matriz[i][j]) {
+						matriz[t][j] = suma;
+						//matriz2[t][j] = bucle;
+					}
+				}
+		}
+	}
+
+	void Floyd() {
+		system("cls");
+		int n, op;
+		do {
+			system("cls");
+			cout << "1.Ingresar tamaño de la matriz\n";
+			cout << "2.Ingresar valores\n";
+			cout << "3.Mostrar Matriz de Distancias\n";
+			cout << "4.Mostrar Matriz de Adyacencia\n";
+			cout << "5.Salir\n";
+			cout << "Ingrese opcion: ";
+			cin >> op;
+			switch (op) {
+			case 1: system("cls");
+				cout << "Ingrese tamaño de la matriz cuadrada: ";
+				cin >> n;
+				break;
+			case 2: system("cls");
+				llenarMatrizDistancias(n);
+				llenarMatrizAdyacencia(n);
+				break;
+			case 3: system("cls");
+				mostrarMDistancias(n);
+				break;
+			case 4: system("cls");
+				mostrarMAdyacencia(n);
+				break;
+			}
+		} while (op != 5);
+		_getch();
+	}
 int main() {
 	int opci = 0;
 	do {
@@ -371,9 +712,9 @@ int main() {
 		cout << "\t\t1. Programa LISTA SIMPLE\n";
 		cout << "\t\t2. Programa COLA \n";
 		cout << "\t\t3. Programa Pila\n";
-		cout << "\t\t4.\n";
-		cout << "\t\t5.\n";
-		cout << "\t\t6.\n";
+		cout << "\t\t4. Programa Recorridos arboles binario \n";
+		cout << "\t\t5. Programa tabla de hash \n";
+		cout << "\t\t6. Programa Floyd Warshall \n";
 		cout << "\t\t7.\n";
 		cout << "\t\t8.\n";
 		cout << "\t\t9.\n";
@@ -392,8 +733,17 @@ int main() {
 		case 3:
 			MenuPila();
 			break;
+		case 4:	
+			Recorridos();
+			break;
+		case 5:
+			TablaHash();
+			break;
+		case 6:
+			Floyd();
+			break;
 		}
 		_getch();
 	} while (opci != 11);
-	
+
 }
